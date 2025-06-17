@@ -1,0 +1,1671 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Space Kings eSports - Equipo Profesional de CSGO</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style id="app-style">
+    :root {
+      --primary-color: #FF4500;
+      --secondary-color: #333;
+      --dark-bg: #121212;
+      --darker-bg: #0a0a0a;
+      --card-bg: #1e1e1e;
+      --text-color: #f2f2f2;
+      --text-secondary: #aaa;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--dark-bg);
+      color: var(--text-color);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .section {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .nav-link {
+      position: relative;
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      background-color: var(--primary-color);
+      bottom: -5px;
+      left: 0;
+      transition: width 0.3s ease;
+    }
+
+    .nav-link:hover::after, .nav-link.active::after {
+      width: 100%;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(255, 69, 0, 0.3);
+    }
+
+    .player-card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      background: linear-gradient(145deg, #1e1e1e, #252525);
+    }
+
+    .player-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    .player-card img {
+      filter: grayscale(20%);
+      transition: filter 0.3s ease;
+    }
+
+    .player-card:hover img {
+      filter: grayscale(0%);
+    }
+
+    .results-table tr:nth-child(even) {
+      background-color: rgba(30, 30, 30, 0.7);
+    }
+
+    .results-table tr {
+      transition: background-color 0.3s ease;
+    }
+
+    .results-table tr:hover {
+      background-color: rgba(255, 69, 0, 0.1);
+    }
+
+    .news-card {
+      transition: transform 0.3s ease;
+    }
+
+    .news-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .social-icon {
+      transition: transform 0.3s ease, color 0.3s ease;
+    }
+
+    .social-icon:hover {
+      transform: translateY(-3px) scale(1.1);
+      color: var(--primary-color);
+    }
+
+    /* Swiper customization */
+    .swiper {
+      width: 100%;
+      height: 600px;
+    }
+
+    .swiper-slide {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide-content {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 2rem;
+      background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0));
+      z-index: 10;
+    }
+
+    .swiper-pagination-bullet {
+      background-color: white;
+      opacity: 0.5;
+    }
+
+    .swiper-pagination-bullet-active {
+      background-color: var(--primary-color);
+      opacity: 1;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      background-color: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+      background-color: var(--card-bg);
+      border: 1px solid #333;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--darker-bg);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #555;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--primary-color);
+    }
+
+    /* Loader */
+    .loader {
+      border: 4px solid rgba(255, 255, 255, 0.1);
+      border-left-color: var(--primary-color);
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Custom animations */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s forwards;
+    }
+
+    /* Form validation styles */
+    .invalid-feedback {
+      color: #ff6b6b;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+
+    input.is-invalid, textarea.is-invalid {
+      border-color: #ff6b6b !important;
+    }
+
+    input:focus, textarea:focus {
+      border-color: var(--primary-color) !important;
+      box-shadow: 0 0 0 2px rgba(255, 69, 0, 0.25) !important;
+    }
+  </style>
+</head>
+<body x-data="{ 
+  activeSection: 'inicio', 
+  mobileMenuOpen: false,
+  playerModal: { isOpen: false, player: null },
+  newsModal: { isOpen: false, article: null },
+  contactFormSubmitted: false,
+  formData: { name: '', email: '', message: '' },
+  formErrors: { name: false, email: false, message: false }
+}">
+
+  <!-- Navigation -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-md py-4 shadow-lg">
+    <div class="container mx-auto px-4 md:px-6">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center">
+          <div class="text-2xl font-bold text-white">
+            <span class="text-[#FF4500]">Space</span>King <span class="text-sm font-normal text-gray-400">eSports</span>
+          </div>
+        </div>
+
+        <!-- Desktop Navigation -->
+        <div class="hidden md:flex space-x-8">
+          <a href="javascript:void(0)" 
+             @click="activeSection = 'inicio'; window.scrollTo({ top: 0, behavior: 'smooth' })" 
+             class="nav-link font-medium text-gray-300 hover:text-white transition-colors"
+             :class="{ 'active text-white': activeSection === 'inicio' }">Inicio</a>
+          <a href="javascript:void(0)" 
+             @click="activeSection = 'jugadores'; document.getElementById('jugadores').scrollIntoView({ behavior: 'smooth' })" 
+             class="nav-link font-medium text-gray-300 hover:text-white transition-colors"
+             :class="{ 'active text-white': activeSection === 'jugadores' }">Jugadores</a>
+          <a href="javascript:void(0)" 
+             @click="activeSection = 'resultados'; document.getElementById('resultados').scrollIntoView({ behavior: 'smooth' })" 
+             class="nav-link font-medium text-gray-300 hover:text-white transition-colors"
+             :class="{ 'active text-white': activeSection === 'resultados' }">Resultados</a>
+          <a href="javascript:void(0)" 
+             @click="activeSection = 'noticias'; document.getElementById('noticias').scrollIntoView({ behavior: 'smooth' })" 
+             class="nav-link font-medium text-gray-300 hover:text-white transition-colors"
+             :class="{ 'active text-white': activeSection === 'noticias' }">Noticias</a>
+          <a href="javascript:void(0)" 
+             @click="activeSection = 'contacto'; document.getElementById('contacto').scrollIntoView({ behavior: 'smooth' })" 
+             class="nav-link font-medium text-gray-300 hover:text-white transition-colors"
+             :class="{ 'active text-white': activeSection === 'contacto' }">Contacto</a>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden text-gray-300 focus:outline-none">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path x-show="!mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            <path x-show="mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Mobile Navigation -->
+      <div x-show="mobileMenuOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-4" class="md:hidden mt-4 space-y-2">
+        <a href="javascript:void(0)" @click="activeSection = 'inicio'; mobileMenuOpen = false; window.scrollTo({ top: 0, behavior: 'smooth' })" class="block py-2 px-4 text-gray-300 hover:bg-gray-800 rounded-md" :class="{ 'bg-gray-800 text-white': activeSection === 'inicio' }">Inicio</a>
+        <a href="javascript:void(0)" @click="activeSection = 'jugadores'; mobileMenuOpen = false; document.getElementById('jugadores').scrollIntoView({ behavior: 'smooth' })" class="block py-2 px-4 text-gray-300 hover:bg-gray-800 rounded-md" :class="{ 'bg-gray-800 text-white': activeSection === 'jugadores' }">Jugadores</a>
+        <a href="javascript:void(0)" @click="activeSection = 'resultados'; mobileMenuOpen = false; document.getElementById('resultados').scrollIntoView({ behavior: 'smooth' })" class="block py-2 px-4 text-gray-300 hover:bg-gray-800 rounded-md" :class="{ 'bg-gray-800 text-white': activeSection === 'resultados' }">Resultados</a>
+        <a href="javascript:void(0)" @click="activeSection = 'noticias'; mobileMenuOpen = false; document.getElementById('noticias').scrollIntoView({ behavior: 'smooth' })" class="block py-2 px-4 text-gray-300 hover:bg-gray-800 rounded-md" :class="{ 'bg-gray-800 text-white': activeSection === 'noticias' }">Noticias</a>
+        <a href="javascript:void(0)" @click="activeSection = 'contacto'; mobileMenuOpen = false; document.getElementById('contacto').scrollIntoView({ behavior: 'smooth' })" class="block py-2 px-4 text-gray-300 hover:bg-gray-800 rounded-md" :class="{ 'bg-gray-800 text-white': activeSection === 'contacto' }">Contacto</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section (Inicio) -->
+  <section id="inicio" class="pt-20 section">
+    <!-- Swiper -->
+    <div class="swiper mySwiper">
+      <div class="swiper-wrapper">
+        <!-- Slide 1 -->
+        <div class="swiper-slide">
+          <img src="https://img.pccomponentes.com/pcblog/8907/counter-strike-2-comandos.jpg" alt="Equipo Space King en acción" class="w-full h-full object-cover">
+          <div class="slide-content">
+            <h1 class="text-4xl md:text-6xl font-bold mb-2">Somos <span class="text-[#FF4500]">Space King</span></h1>
+            <p class="text-xl md:text-2xl mb-6 max-w-2xl">El equipo de Counter-Strike que está redefiniendo el juego competitivo en la escena latinoamericana</p>
+            <button @click="document.getElementById('jugadores').scrollIntoView({ behavior: 'smooth' })" class="btn-primary px-6 py-3 rounded-md font-medium">Ver Más</button>
+          </div>
+        </div>
+        <!-- Slide 2 -->
+        <div class="swiper-slide">
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQgnJgnt6Tyho-LmVK0yKZr2Eb7bepVK1SRNQ&s" alt="Jugadores concentrados" class="w-full h-full object-cover">
+          <div class="slide-content">
+            <h1 class="text-4xl md:text-6xl font-bold mb-2">Compromiso <span class="text-[#FF4500]">Total</span></h1>
+            <p class="text-xl md:text-2xl mb-6 max-w-2xl">Cada torneo, cada ronda, cada segundo cuenta en nuestra búsqueda de la excelencia</p>
+            <button @click="document.getElementById('resultados').scrollIntoView({ behavior: 'smooth' })" class="btn-primary px-6 py-3 rounded-md font-medium">Ver Resultados</button>
+          </div>
+        </div>
+        <!-- Slide 3 -->
+        <div class="swiper-slide">
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTiGoBJGQh9GOmcubLU2s9l6UR8PLWOi5yvIQ&s" alt="Campeonato Space King" class="w-full h-full object-cover">
+          <div class="slide-content">
+            <h1 class="text-4xl md:text-6xl font-bold mb-2">Campeones <span class="text-[#FF4500]">Regionales</span></h1>
+            <p class="text-xl md:text-2xl mb-6 max-w-2xl">Nuestra trayectoria nos ha consolidado como referentes del CSGO competitivo</p>
+            <button @click="document.getElementById('noticias').scrollIntoView({ behavior: 'smooth' })" class="btn-primary px-6 py-3 rounded-md font-medium">Últimas Noticias</button>
+          </div>
+        </div>
+      </div>
+      <div class="swiper-pagination"></div>
+    </div>
+
+    <!-- Team Introduction -->
+    <div class="container mx-auto px-4 py-16">
+      <div class="bg-[#1a1a1a]/80 backdrop-blur-sm rounded-lg p-8 shadow-2xl">
+        <h2 class="text-3xl font-bold mb-6 border-b border-[#FF4500]/30 pb-4">Sobre <span class="text-[#FF4500]">Space King</span></h2>
+        <div class="flex flex-col md:flex-row gap-8">
+          <div class="flex-1">
+            <p class="text-lg text-gray-300 leading-relaxed mb-4">
+              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quia dolorem maxime sit tenetur nemo vel velit explicabo! Enim vero pariatur harum ex, facere, architecto, magnam dolorum blanditiis sequi est incidunt. 
+            </p>
+            <p class="text-lg text-gray-300 leading-relaxed">
+              Lorem ipsum dolor sit amet consectetur, adipisicing elit. Voluptate ipsam sunt ea inventore eligendi. Velit corporis nobis quasi nihil voluptas, expedita voluptatibus quidem doloribus tempore unde soluta, quisquam molestiae neque?
+            </p>
+          </div>
+          <div class="flex-1">
+            <div class="bg-[#252525] rounded-lg p-6 shadow-inner">
+              <h3 class="text-xl font-semibold mb-4 text-[#FF4500]">Logros Destacados</h3>
+              <ul class="space-y-2 text-gray-300">
+                <li class="flex items-start">
+                  <i class="fas fa-trophy text-yellow-500 mt-1 mr-2"></i>
+                  <span>Campeones Nacionales 2023</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-medal text-gray-400 mt-1 mr-2"></i>
+                  <span>Subcampeones LATAM Masters 2024</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-star text-yellow-500 mt-1 mr-2"></i>
+                  <span>Top 8 en International CS Challenge 2023</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-award text-blue-500 mt-1 mr-2"></i>
+                  <span>Mejor equipo revelación 2022</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Players Section -->
+  <section id="jugadores" class="py-20 bg-[#0a0a0a] section">
+    <div class="container mx-auto px-4">
+      <h2 class="text-4xl font-bold mb-2 text-center">Nuestros <span class="text-[#FF4500]">Jugadores</span></h2>
+      <p class="text-gray-400 text-center mb-12 max-w-2xl mx-auto">Conoce a los profesionales que conforman Space King, sus roles y estadísticas dentro del equipo.</p>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+        <!-- Player 1 -->
+        <div class="player-card bg-[#1e1e1e] rounded-lg overflow-hidden shadow-lg">
+          <div class="relative">
+            <img src="data:image/jpeg;base64,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" alt="Phoenix" class="w-full h-64 object-cover object-top">
+            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4">
+              <h3 class="text-xl font-bold">Phoenix</h3>
+              <p class="text-[#FF4500]">Rango</p>
+            </div>
+          </div>
+          <div class="p-4">
+            <div class="grid grid-cols-2 gap-2 mb-4">
+              <div class="bg-[#252525] p-2 rounded text-center">
+                <p class="text-sm text-gray-400">K/D Ratio</p>
+                <p class="text-xl font-bold">1.24</p>
+              </div>
+              <div class="bg-[#252525] p-2 rounded text-center">
+                <p class="text-sm text-gray-400">Maps</p>
+                <p class="text-xl font-bold">342</p>
+              </div>
+            </div>
+            <button @click="playerModal.player = {
+              nickname: 'Phoenix',
+              role: 'Capitán / IGL',
+              realName: 'Alejandro Méndez',
+              age: 26,
+              country: 'México',
+              bio: 'Líder natural con cinco años de experiencia competitiva. Reconocido por su capacidad estratégica y toma de decisiones bajo presión. Su liderazgo ha sido clave en los momentos decisivos.',
+              achievements: ['MVP en LATAM Finals 2023', 'Mejor IGL Nacional 2022', 'Más de 5,000 horas en CSGO'],
+              social: {
+                twitter: 'PhoenixCS',
+                instagram: 'phoenix_oficial',
+                twitch: 'phoenix_streams'
+              },
+              stats: {
+                kdRatio: 1.24,
+                headshotPercentage: 48,
+                mapsPlayed: 342,
+                rating: 1.18
+              },
+              signature: 'Mirage y Dust II'
+            }; playerModal.isOpen = true" class="w-full py-2 bg-[#FF4500] text-white rounded hover:bg-[#ff5a1f] transition duration-300 text-center">Ver Perfil</button>
+          </div>
+        </div>
+
+        <!-- Player 2 -->
+        <div class="player-card bg-[#1e1e1e] rounded-lg overflow-hidden shadow-lg">
+          <div class="relative">
+            <img src="data:image/jpeg;base64,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" alt="Viper" class="w-full h-64 object-cover object-top">
+            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4">
+              <h3 class="text-xl font-bold">Viper</h3>
+              <p class="text-[#FF4500]">Rango</p>
+            </div>
+          </div>
+          <div class="p-4">
+            <div class="grid grid-cols-2 gap-2 mb-4">
+              <div class="bg-[#252525] p-2 rounded text-center">
+                <p class="text-sm text-gray-400">K/D Ratio</p>
+                <p class="text-xl font-bold">1.35</p>
+              </div>
+              <div class="bg-[#252525] p-2 rounded text-center">
+                <p class="text-sm text-gray-400">Maps</p>
+                <p class="text-xl font-bold">298</p>
+              </div>
+            </div>
+            <button @click="playerModal.player = {
+              nickname: 'Viper',
+              role: 'AWPer',
+              realName: 'Carlos Rodríguez',
+              age: 24,
+              country: 'Colombia',
+              bio: 'El francotirador estrella del equipo. Su precisión con el AWP y reflejos sobrehumanos lo convierten en uno de los jugadores más temidos de la región. Especialista en picks agresivos y clutches imposibles.',
+              achievements: ['Máximo AWPer LATAM 2023', '32 kills en una sola partida contra Fnatic', 'AWP ace en la final nacional'],
+              social: {
+                twitter: 'ViperAWP',
+                instagram: 'viper_awp',
+                twitch: 'viper_gaming'
+              },
+              stats: {
+                kdRatio: 1.35,
+                headshotPercentage: 38,
+                mapsPlayed: 298,
+                rating: 1.27
+              },
+              signature: 'Inferno y Nuke'
+            }; playerModal.isOpen = true" class="w-full py-2 bg-[#FF4500] text-white rounded hover:bg-[#ff5a1f] transition duration-300 text-center">Ver Perfil</button>
+          </div>
+        </div>
+
+        <!-- Player 3 -->
+        <div class="player-card bg-[#1e1e1e] rounded-lg overflow-hidden shadow-lg">
+          <div class="relative">
+            <img src="data:image/jpeg;base64,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" alt="Shadow" class="w-full h-64 object-cover object-top">
+            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4">
+              <h3 class="text-xl font-bold">Shadow</h3>
+              <p class="text-[#FF4500]">Rango</p>
+            </div>
+          </div>
+          <div class="p-4">
+            <div class="grid grid-cols-2 gap-2 mb-4">
+              <div class="bg-[#252525] p-2 rounded text-center">
+                <p class="text-sm text-gray-400">K/D Ratio</p>
+                <p class="text-xl font-bold">1.17</p>
+              </div>
+              <div class="bg-[#252525] p-2 rounded text-center">
+                <p class="text-sm text-gray-400">Maps</p>
+                <p class="text-xl font-bold">315</p>
+              </div>
+            </div>
+            <button @click="playerModal.player = {
+              nickname: 'Shadow',
+              role: 'Entry Fragger',
+              realName: 'Gabriel Torres',
+              age: 22,
+              country: 'Argentina',
+              bio: 'El más joven del equipo y responsable de los primeros contactos con el enemigo. Su agresividad calculada y reflejos excepcionales lo convierten en un entry fragger formidable. Conocido por crear espacios para su equipo.',
+              achievements: ['Rookie del año 2022', 'Primera entrada en 78% de rondas ganadas', 'Jugador con más mejora 2023'],
+              social: {
+                twitter: 'ShadowCS',
+                instagram: 'shadow_gaming',
+                twitch: 'shadow_live'
+              },
+              stats: {
+                kdRatio: 1.17,
+                headshotPercentage: 63,
+                mapsPlayed: 315,
+                rating: 1.15
+              },
+              signature: 'Mirage y Vertigo'
+            }; playerModal.isOpen = true" class="w-full py-2 bg-[#FF4500] text-white rounded hover:bg-[#ff5a1f] transition duration-300 text-center">Ver Perfil</button>
+          </div>
+        </div>
+
+        <!-- Player 4 -->
+        <div class="player-card bg-[#1e1e1e] rounded-lg overflow-hidden shadow-lg">
+          <div class="relative">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRYMUbltjCjftc56nnXXLD-cJ0MnQ4bECB35Q&s" alt="Cipher" class="w-full h-64 object-cover object-top">
+            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4">
+              <h3 class="text-xl font-bold">Cipher</h3>
+              <p class="text-[#FF4500]">Rango</p>
+            </div>
+          </div>
+          <div class="p-4">
+            <div class="grid grid-cols-2 gap-2 mb-4">
+              <div class="bg-[#252525] p-2 rounded text-center">
+                <p class="text-sm text-gray-400">K/D Ratio</p>
+                <p class="text-xl font-bold">1.09</p>
+              </div>
+              <div class="bg-[#252525] p-2 rounded text-center">
+                <p class="text-sm text-gray-400">Maps</p>
+                <p class="text-xl font-bold">330</p>
+              </div>
+            </div>
+            <button @click="playerModal.player = {
+              nickname: 'Cipher',
+              role: 'Support',
+              realName: 'Lucía Vega',
+              age: 25,
+              country: 'Chile',
+              bio: 'La estratega táctica del equipo. Su conocimiento del juego y su capacidad para leer al oponente le permite dar soporte excepcional. Especialista en utility y retakes, siempre encuentra la forma de darle ventaja al equipo.',
+              achievements: ['Mayor porcentaje de utilidad efectiva 2023', 'Especialista en flashes cegadoras', 'Jugadora más consistente'],
+              social: {
+                twitter: 'CipherGG',
+                instagram: 'cipher_gg',
+                twitch: 'cipher_tactics'
+              },
+              stats: {
+                kdRatio: 1.09,
+                headshotPercentage: 51,
+                mapsPlayed: 330,
+                rating: 1.13
+              },
+              signature: 'Overpass y Ancient'
+            }; playerModal.isOpen = true" class="w-full py-2 bg-[#FF4500] text-white rounded hover:bg-[#ff5a1f] transition duration-300 text-center">Ver Perfil</button>
+          </div>
+        </div>
+
+        <!-- Player 5 -->
+        <div class="player-card bg-[#1e1e1e] rounded-lg overflow-hidden shadow-lg">
+          <div class="relative">
+            <img src="https://i.imgur.com/sROyciv.png" alt="Reaper" class="w-full h-64 object-cover object-top">
+            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4">
+              <h3 class="text-xl font-bold">Reaper</h3>
+              <p class="text-[#FF4500]">Rango</p>
+            </div>
+          </div>
+          <div class="p-4">
+            <div class="grid grid-cols-2 gap-2 mb-4">
+              <div class="bg-[#252525] p-2 rounded text-center">
+                <p class="text-sm text-gray-400">K/D Ratio</p>
+                <p class="text-xl font-bold">1.28</p>
+              </div>
+              <div class="bg-[#252525] p-2 rounded text-center">
+                <p class="text-sm text-gray-400">Maps</p>
+                <p class="text-xl font-bold">305</p>
+              </div>
+            </div>
+            <button @click="playerModal.player = {
+              nickname: 'Reaper',
+              role: 'Lurker',
+              realName: 'Martín Herrera',
+              age: 27,
+              country: 'Perú',
+              bio: 'El silencioso asesino del equipo. Maestro del sigilo y las emboscadas, se especializa en movimientos impredecibles y flanqueos letales. Su paciencia y timing son inigualables, convirtiéndolo en un clutcher excepcional.',
+              achievements: ['Rey del clutch 2023', 'Más eliminaciones desde la espalda', 'Ratio de victoria en 1v2 del 68%'],
+              social: {
+                twitter: 'ReaperLurk',
+                instagram: 'reaper_cs',
+                twitch: 'the_real_reaper'
+              },
+              stats: {
+                kdRatio: 1.28,
+                headshotPercentage: 57,
+                mapsPlayed: 305,
+                rating: 1.23
+              },
+              signature: 'Cache y Dust II'
+            }; playerModal.isOpen = true" class="w-full py-2 bg-[#FF4500] text-white rounded hover:bg-[#ff5a1f] transition duration-300 text-center">Ver Perfil</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Player Modal -->
+    <div x-show="playerModal.isOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 z-50 overflow-y-auto modal-backdrop flex items-center justify-center p-4" @click.self="playerModal.isOpen = false">
+      <div x-show="playerModal.isOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95" x-transition:enter-end="opacity-100 transform scale-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-95" class="modal-content bg-[#1e1e1e] rounded-lg shadow-xl max-w-4xl w-full mx-auto overflow-hidden" @click.outside="playerModal.isOpen = false">
+        <div class="flex flex-col md:flex-row">
+          <!-- Left Side - Image -->
+          <div class="md:w-1/3 bg-[#252525]">
+            <div class="relative h-full">
+              <img :src="'https://cdn.pixabay.com/photo/2017/07/21/23/57/concert-2527495_1280.jpg'" alt="Player Profile" class="w-full h-full object-cover object-center">
+              <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6">
+                <h3 class="text-3xl font-bold" x-text="playerModal.player?.nickname"></h3>
+                <p class="text-[#FF4500] text-lg" x-text="playerModal.player?.role"></p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Right Side - Info -->
+          <div class="md:w-2/3 p-6">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <h4 class="text-xl font-semibold" x-text="playerModal.player?.realName"></h4>
+                <p class="text-gray-400">
+                  <span x-text="playerModal.player?.age"></span> años • 
+                  <span x-text="playerModal.player?.country"></span>
+                </p>
+              </div>
+              <button @click="playerModal.isOpen = false" class="text-gray-400 hover:text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div class="mb-6">
+              <h5 class="text-lg font-semibold mb-2 text-[#FF4500]">Biografía</h5>
+              <p class="text-gray-300" x-text="playerModal.player?.bio"></p>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 mb-6">
+              <div>
+                <h5 class="text-lg font-semibold mb-2 text-[#FF4500]">Estadísticas</h5>
+                <div class="bg-[#252525] rounded-lg p-4">
+                  <div class="grid grid-cols-2 gap-4">
+                    <div class="text-center">
+                      <p class="text-sm text-gray-400">K/D Ratio</p>
+                      <p class="text-xl font-bold" x-text="playerModal.player?.stats.kdRatio"></p>
+                    </div>
+                    <div class="text-center">
+                      <p class="text-sm text-gray-400">HS %</p>
+                      <p class="text-xl font-bold" x-text="playerModal.player?.stats.headshotPercentage + '%'"></p>
+                    </div>
+                    <div class="text-center">
+                      <p class="text-sm text-gray-400">Maps</p>
+                      <p class="text-xl font-bold" x-text="playerModal.player?.stats.mapsPlayed"></p>
+                    </div>
+                    <div class="text-center">
+                      <p class="text-sm text-gray-400">Rating</p>
+                      <p class="text-xl font-bold" x-text="playerModal.player?.stats.rating"></p>
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-4">
+                  <p class="text-sm text-gray-400">Mapas favoritos</p>
+                  <p class="text-gray-300" x-text="playerModal.player?.signature"></p>
+                </div>
+              </div>
+              
+              <div>
+                <h5 class="text-lg font-semibold mb-2 text-[#FF4500]">Logros</h5>
+                <ul class="space-y-2">
+                  <template x-for="achievement in playerModal.player?.achievements">
+                    <li class="flex items-start">
+                      <i class="fas fa-trophy text-yellow-500 mt-1 mr-2"></i>
+                      <span x-text="achievement" class="text-gray-300"></span>
+                    </li>
+                  </template>
+                </ul>
+              </div>
+            </div>
+            
+            <div>
+              <h5 class="text-lg font-semibold mb-2 text-[#FF4500]">Redes Sociales</h5>
+              <div class="flex space-x-4">
+                <a href="javascript:void(0)" class="text-gray-400 hover:text-[#1DA1F2] transition-colors">
+                  <i class="fab fa-twitter fa-lg"></i>
+                  <span class="ml-1" x-text="'@' + playerModal.player?.social.twitter"></span>
+                </a>
+                <a href="javascript:void(0)" class="text-gray-400 hover:text-[#E1306C] transition-colors">
+                  <i class="fab fa-instagram fa-lg"></i>
+                  <span class="ml-1" x-text="'@' + playerModal.player?.social.instagram"></span>
+                </a>
+                <a href="javascript:void(0)" class="text-gray-400 hover:text-[#6441A4] transition-colors">
+                  <i class="fab fa-twitch fa-lg"></i>
+                  <span class="ml-1" x-text="playerModal.player?.social.twitch"></span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Results Section -->
+  <section id="resultados" class="py-20 section">
+    <div class="container mx-auto px-4">
+      <h2 class="text-4xl font-bold mb-2 text-center">Nuestros <span class="text-[#FF4500]">Resultados</span></h2>
+      <p class="text-gray-400 text-center mb-12 max-w-2xl mx-auto">Consulta los últimos encuentros y torneos donde Space King ha participado.</p>
+      
+      <div class="bg-[#1a1a1a] rounded-lg shadow-lg p-6 mb-8">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+          <div class="mb-4 md:mb-0">
+            <h3 class="text-2xl font-bold mb-1">Historial de Partidas</h3>
+            <p class="text-gray-400">Resultados de las últimas competiciones</p>
+          </div>
+          <div class="flex space-x-4">
+            <div class="relative">
+              <!-- <select class="bg-[#252525] text-white rounded-md py-2 pl-3 pr-8 appearance-none focus:outline-none focus:ring-2 focus:ring-[#FF4500]">
+                <option>Todos los torneos</option>
+                <option>LATAM Masters</option>
+                <option>CS Major</option>
+                <option>Liga Nacional</option>
+              </select> -->
+                <!-- <div class="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                  <i class="fas fa-chevron-down text-gray-400"></i>
+                </div> -->
+            </div>
+            <button id="updateResults" class="bg-[#FF4500] hover:bg-[#ff5a1f] text-white py-2 px-4 rounded-md transition duration-300 flex items-center">
+              <i class="fas fa-sync-alt mr-2"></i> Actualizar
+            </button>
+          </div>
+        </div>
+        
+        <div class="overflow-x-auto">
+          <table class="w-full results-table">
+            <thead>
+              <tr class="border-b border-[#333]">
+                <th class="py-3 px-4 text-left cursor-pointer">
+                  <div class="flex items-center">
+                    <span>Fecha</span>
+                    <i class="fas fa-sort ml-1 text-gray-500"></i>
+                  </div>
+                </th>
+                <th class="py-3 px-4 text-left cursor-pointer">
+                  <div class="flex items-center">
+                    <span>Torneo</span>
+                    <i class="fas fa-sort ml-1 text-gray-500"></i>
+                  </div>
+                </th>
+                <th class="py-3 px-4 text-left">Oponente</th>
+                <th class="py-3 px-4 text-center">Resultado</th>
+                <th class="py-3 px-4 text-center">Mapa</th>
+                <th class="py-3 px-4 text-center">MVP</th>
+              </tr>
+            </thead>
+            <tbody id="resultsTableBody">
+              <tr>
+                <td class="py-4 px-4">12/05/2024</td>
+                <td class="py-4 px-4">
+                  <div class="flex items-center">
+                    <div class="w-6 h-6 mr-2">
+                      <img src="https://cdn.pixabay.com/photo/2013/07/12/14/07/trophy-147752_1280.png" alt="LATAM Masters" class="w-full h-full object-contain">
+                    </div>
+                    LATAM Masters
+                  </div>
+                </td>
+                <td class="py-4 px-4">
+                  <div class="flex items-center">
+                    <div class="w-6 h-6 mr-2">
+                      <img src="https://cdn.pixabay.com/photo/2013/07/13/10/07/football-156970_1280.png" alt="Team Eagles" class="w-full h-full object-contain">
+                    </div>
+                    Team Eagles
+                  </div>
+                </td>
+                <td class="py-4 px-4 text-center">
+                  <span class="bg-green-900/30 text-green-500 py-1 px-3 rounded-full font-medium">16 - 12</span>
+                </td>
+                <td class="py-4 px-4 text-center">Mirage</td>
+                <td class="py-4 px-4 text-center">Viper</td>
+              </tr>
+              <tr>
+                <td class="py-4 px-4">08/05/2024</td>
+                <td class="py-4 px-4">
+                  <div class="flex items-center">
+                    <div class="w-6 h-6 mr-2">
+                      <img src="https://cdn.pixabay.com/photo/2013/07/12/14/07/trophy-147752_1280.png" alt="LATAM Masters" class="w-full h-full object-contain">
+                    </div>
+                    LATAM Masters
+                  </div>
+                </td>
+                <td class="py-4 px-4">
+                  <div class="flex items-center">
+                    <div class="w-6 h-6 mr-2">
+                      <img src="https://cdn.pixabay.com/photo/2014/04/03/10/25/fire-310403_1280.png" alt="Inferno Gaming" class="w-full h-full object-contain">
+                    </div>
+                    Inferno Gaming
+                  </div>
+                </td>
+                <td class="py-4 px-4 text-center">
+                  <span class="bg-green-900/30 text-green-500 py-1 px-3 rounded-full font-medium">16 - 10</span>
+                </td>
+                <td class="py-4 px-4 text-center">Dust II</td>
+                <td class="py-4 px-4 text-center">Phoenix</td>
+              </tr>
+              <tr>
+                <td class="py-4 px-4">30/04/2024</td>
+                <td class="py-4 px-4">
+                  <div class="flex items-center">
+                    <div class="w-6 h-6 mr-2">
+                      <img src="https://cdn.pixabay.com/photo/2012/04/01/17/29/north-america-23512_1280.png" alt="CS Major" class="w-full h-full object-contain">
+                    </div>
+                    CS Major
+                  </div>
+                </td>
+                <td class="py-4 px-4">
+                  <div class="flex items-center">
+                    <div class="w-6 h-6 mr-2">
+                      <img src="https://cdn.pixabay.com/photo/2013/07/13/12/32/skull-159853_1280.png" alt="Skull Crushers" class="w-full h-full object-contain">
+                    </div>
+                    Skull Crushers
+                  </div>
+                </td>
+                <td class="py-4 px-4 text-center">
+                  <span class="bg-red-900/30 text-red-500 py-1 px-3 rounded-full font-medium">12 - 16</span>
+                </td>
+                <td class="py-4 px-4 text-center">Nuke</td>
+                <td class="py-4 px-4 text-center">Reaper</td>
+              </tr>
+              <tr>
+                <td class="py-4 px-4">22/04/2024</td>
+                <td class="py-4 px-4">
+                  <div class="flex items-center">
+                    <div class="w-6 h-6 mr-2">
+                      <img src="https://cdn.pixabay.com/photo/2013/07/12/14/07/trophy-147752_1280.png" alt="Liga Nacional" class="w-full h-full object-contain">
+                    </div>
+                    Liga Nacional
+                  </div>
+                </td>
+                <td class="py-4 px-4">
+                  <div class="flex items-center">
+                    <div class="w-6 h-6 mr-2">
+                      <img src="https://cdn.pixabay.com/photo/2013/07/12/15/35/lightning-150146_1280.png" alt="Thunder Esports" class="w-full h-full object-contain">
+                    </div>
+                    Thunder Esports
+                  </div>
+                </td>
+                <td class="py-4 px-4 text-center">
+                  <span class="bg-green-900/30 text-green-500 py-1 px-3 rounded-full font-medium">16 - 9</span>
+                </td>
+                <td class="py-4 px-4 text-center">Inferno</td>
+                <td class="py-4 px-4 text-center">Cipher</td>
+              </tr>
+              <tr>
+                <td class="py-4 px-4">15/04/2024</td>
+                <td class="py-4 px-4">
+                  <div class="flex items-center">
+                    <div class="w-6 h-6 mr-2">
+                      <img src="https://cdn.pixabay.com/photo/2013/07/12/14/07/trophy-147752_1280.png" alt="Liga Nacional" class="w-full h-full object-contain">
+                    </div>
+                    Liga Nacional
+                  </div>
+                </td>
+                <td class="py-4 px-4">
+                  <div class="flex items-center">
+                    <div class="w-6 h-6 mr-2">
+                      <img src="https://cdn.pixabay.com/photo/2013/07/13/10/51/panda-157047_1280.png" alt="Panda Force" class="w-full h-full object-contain">
+                    </div>
+                    Panda Force
+                  </div>
+                </td>
+                <td class="py-4 px-4 text-center">
+                  <span class="bg-yellow-900/30 text-yellow-500 py-1 px-3 rounded-full font-medium">15 - 15</span>
+                </td>
+                <td class="py-4 px-4 text-center">Vertigo</td>
+                <td class="py-4 px-4 text-center">Shadow</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-[#1a1a1a] rounded-lg shadow-lg p-6">
+          <h3 class="text-xl font-bold mb-4 flex items-center">
+            <i class="fas fa-chart-line text-[#FF4500] mr-2"></i>
+            Estadísticas del Equipo
+          </h3>
+          <div class="space-y-4">
+            <div>
+              <div class="flex justify-between mb-1">
+                <span>Victorias/Derrotas</span>
+                <span>68%</span>
+              </div>
+              <div class="w-full bg-[#333] rounded-full h-2.5">
+                <div class="bg-[#FF4500] h-2.5 rounded-full" style="width: 68%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between mb-1">
+                <span>Rondas Ganadas</span>
+                <span>72%</span>
+              </div>
+              <div class="w-full bg-[#333] rounded-full h-2.5">
+                <div class="bg-[#FF4500] h-2.5 rounded-full" style="width: 72%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between mb-1">
+                <span>Pistol Rounds</span>
+                <span>59%</span>
+              </div>
+              <div class="w-full bg-[#333] rounded-full h-2.5">
+                <div class="bg-[#FF4500] h-2.5 rounded-full" style="width: 59%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between mb-1">
+                <span>Clutches</span>
+                <span>63%</span>
+              </div>
+              <div class="w-full bg-[#333] rounded-full h-2.5">
+                <div class="bg-[#FF4500] h-2.5 rounded-full" style="width: 63%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-[#1a1a1a] rounded-lg shadow-lg p-6">
+          <h3 class="text-xl font-bold mb-4 flex items-center">
+            <i class="fas fa-map text-[#FF4500] mr-2"></i>
+            Mapas Favoritos
+          </h3>
+          <div class="h-56">
+            <canvas id="mapsChart"></canvas>
+          </div>
+        </div>
+        
+        <div class="bg-[#1a1a1a] rounded-lg shadow-lg p-6">
+          <h3 class="text-xl font-bold mb-4 flex items-center">
+            <i class="fas fa-trophy text-[#FF4500] mr-2"></i>
+            Próximos Torneos
+          </h3>
+          <ul class="space-y-4">
+            <li class="flex items-start">
+              <div class="bg-[#252525] rounded-lg p-2 mr-3">
+                <span class="text-lg font-bold">24</span>
+                <span class="block text-xs text-gray-400">May</span>
+              </div>
+              <div>
+                <h4 class="font-semibold">LATAM Masters - Semifinal</h4>
+                <p class="text-sm text-gray-400">vs. Nova Esports</p>
+                <p class="text-xs text-[#FF4500] mt-1">Online • 18:00 GMT-3</p>
+              </div>
+            </li>
+            <li class="flex items-start">
+              <div class="bg-[#252525] rounded-lg p-2 mr-3">
+                <span class="text-lg font-bold">10</span>
+                <span class="block text-xs text-gray-400">Jun</span>
+              </div>
+              <div>
+                <h4 class="font-semibold">CS Championship Series</h4>
+                <p class="text-sm text-gray-400">Fase de Grupos</p>
+                <p class="text-xs text-[#FF4500] mt-1">Madrid, España • 12:00 GMT+2</p>
+              </div>
+            </li>
+            <li class="flex items-start">
+              <div class="bg-[#252525] rounded-lg p-2 mr-3">
+                <span class="text-lg font-bold">22</span>
+                <span class="block text-xs text-gray-400">Jun</span>
+              </div>
+              <div>
+                <h4 class="font-semibold">Liga Nacional - Temporada 3</h4>
+                <p class="text-sm text-gray-400">Inicio de Temporada</p>
+                <p class="text-xs text-[#FF4500] mt-1">Online • 20:00 GMT-3</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- News Section -->
+  <section id="noticias" class="py-20 bg-[#0a0a0a] section">
+    <div class="container mx-auto px-4">
+      <h2 class="text-4xl font-bold mb-2 text-center">Últimas <span class="text-[#FF4500]">Noticias</span></h2>
+      <p class="text-gray-400 text-center mb-12 max-w-2xl mx-auto">Mantente al día con las últimas novedades, entrevistas y análisis del equipo Space King.</p>
+      
+      <div class="max-w-4xl mx-auto space-y-8" id="newsContainer">
+        <!-- News Item 1 -->
+        <div class="news-card bg-[#1a1a1a] rounded-lg overflow-hidden shadow-lg">
+          <div class="md:flex">
+            <div class="md:w-1/3">
+              <img src="https://cdn.pixabay.com/photo/2018/08/10/15/43/video-gamer-3597628_1280.jpg" alt="Space King clasifica a semifinales" class="w-full h-full object-cover md:h-64">
+            </div>
+            <div class="md:w-2/3 p-6">
+              <div class="flex justify-between items-start mb-2">
+                <span class="inline-block bg-[#FF4500]/20 text-[#FF4500] text-xs font-semibold px-2.5 py-1 rounded">Competición</span>
+                <span class="text-gray-400 text-sm">15 mayo 2024</span>
+              </div>
+              <h3 class="text-xl font-bold mb-2">Space King clasifica a semifinales del LATAM Masters</h3>
+              <p class="text-gray-300 mb-4">Una impresionante actuación de todo el equipo aseguró el pase a las semifinales del torneo más importante de la región. Phoenix lideró al equipo con estrategias innovadoras mientras Viper brilló con su AWP...</p>
+              <button @click="newsModal.article = {
+                title: 'Space King  clasifica a semifinales del LATAM Masters',
+                date: '15 mayo 2024',
+                category: 'Competición',
+                image: 'https://cdn.pixabay.com/photo/2018/08/10/15/43/video-gamer-3597628_1280.jpg',
+                content: `
+                  <p class='mb-4'>Una impresionante actuación de todo el equipo aseguró el pase a las semifinales del torneo más importante de la región. Phoenix lideró al equipo con estrategias innovadoras mientras Viper brilló con su AWP, consiguiendo más de 25 eliminaciones en el mapa decisivo.</p>
+                  
+                  <p class='mb-4'>El enfrentamiento contra Team Eagles fue especialmente tenso, con un primer mapa que se decidió en la prórroga. La capacidad de adaptación mostrada por Space King durante el lado CT en Mirage fue clave para conseguir la victoria.</p>
+                  
+                  <p class='mb-4'>En palabras del capitán Phoenix: <Estábamos preparados para este momento. Hemos estudiado a nuestros rivales durante semanas y ejecutamos el plan a la perfección. Ahora toca pensar en semifinales, donde nos espera un rival aún más duro.></p>
+                  
+                  <p class='mb-4'>El equipo ahora se enfrentará a Nova Esports en semifinales, un equipo que ha mostrado gran fortaleza durante todo el torneo y que será sin duda un desafío mayúsculo para nuestros jugadores.</p>
+                  
+                  <h3 class='text-xl font-bold mt-6 mb-3'>Estadísticas destacadas del partido</h3>
+                  
+                  <ul class='list-disc pl-5 mb-4 space-y-1'>
+                    <li>Viper: 25 eliminaciones, 1.45 rating</li>
+                    <li>Phoenix: 18 eliminaciones, 7 asistencias</li>
+                    <li>Reaper: 3 clutches ganados en rondas cruciales</li>
+                    <li>Shadow: Entry fragger en 8 rondas ganadas</li>
+                  </ul>
+                  
+                  <p class='mb-4'>Los aficionados podrán ver la semifinal el próximo 24 de mayo a las 18:00 GMT-3, en una transmisión que promete batir récords de audiencia para la escena latinoamericana de CSGO.</p>
+                `,
+                author: 'Carlos Mendoza',
+                authorImage: 'https://cdn.pixabay.com/photo/2016/11/18/19/07/happy-1836445_1280.jpg',
+                relatedArticles: [
+                  'Análisis táctico: Las estrategias de Phoenix para Mirage',
+                  'Entrevista exclusiva con Viper, el AWPer estrella',
+                  'Historia de rivalidad: Space King vs Nova Esports'
+                ]
+              }; newsModal.isOpen = true" class="text-[#FF4500] hover:text-[#ff5a1f] transition-colors font-medium inline-flex items-center">
+                Leer más <i class="fas fa-arrow-right ml-1"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- News Item 2 -->
+        <div class="news-card bg-[#1a1a1a] rounded-lg overflow-hidden shadow-lg">
+          <div class="md:flex">
+            <div class="md:w-1/3">
+              <img src="https://cdn.pixabay.com/photo/2022/08/16/15/42/gamer-7390946_1280.jpg" alt="Viper recibe reconocimiento" class="w-full h-full object-cover md:h-64">
+            </div>
+            <div class="md:w-2/3 p-6">
+              <div class="flex justify-between items-start mb-2">
+                <span class="inline-block bg-[#FF4500]/20 text-[#FF4500] text-xs font-semibold px-2.5 py-1 rounded">Jugadores</span>
+                <span class="text-gray-400 text-sm">10 mayo 2024</span>
+              </div>
+              <h3 class="text-xl font-bold mb-2">Viper, nombrado mejor AWPer del mes por CS Analytics</h3>
+              <p class="text-gray-300 mb-4">Nuestro AWPer estrella ha sido reconocido como el mejor francotirador del mes de abril. Sus impresionantes estadísticas y momentos destacados le han valido este prestigioso reconocimiento que lo posiciona entre la élite mundial...</p>
+              <button @click="newsModal.article = {
+                title: 'Viper, nombrado mejor AWPer del mes por CS Analytics',
+                date: '10 mayo 2024',
+                category: 'Jugadores',
+                image: 'https://cdn.pixabay.com/photo/2022/08/16/15/42/gamer-7390946_1280.jpg',
+                content: `
+                  <p class='mb-4'>Nuestro AWPer estrella ha sido reconocido como el mejor francotirador del mes de abril. Sus impresionantes estadísticas y momentos destacados le han valido este prestigioso reconocimiento que lo posiciona entre la élite mundial del CSGO.</p>
+                  
+                  <p class='mb-4'>CS Analytics, reconocida plataforma de análisis estadístico, ha otorgado este galardón basándose en diversos factores como precisión, impacto en rondas, eliminaciones por partido y clutches ganados. Viper superó a grandes nombres internacionales, convirtiéndose en el primer latinoamericano en recibir este reconocimiento en 2024.</p>
+                  
+                  <p class='mb-4'>Durante el último mes, Viper ha mantenido un impresionante ratio de 1.35 K/D, con un porcentaje de acierto del 68% con el AWP. Particularmente destacable fue su actuación contra Inferno Gaming, donde consiguió un ace que ya se ha vuelto viral en redes sociales.</p>
+                  
+                  <p class='mb-4'>En respuesta a este reconocimiento, Viper comentó: <Es un honor recibir este premio, pero lo más importante es que el equipo está funcionando bien. Mis compañeros me dan la confianza y el espacio para hacer mi trabajo, y eso es lo que realmente importa.></p>
+                  
+                  <h3 class='text-xl font-bold mt-6 mb-3'>Evolución de Viper como AWPer</h3>
+                  
+                  <p class='mb-4'>El camino de Viper hasta convertirse en uno de los mejores AWPers no ha sido fácil. Comenzó su carrera como rifler, y solo en los últimos dos años ha perfeccionado su estilo con el francotirador, bajo la guía del entrenador Marcos <Hawk> Jiménez.</p>
+                  
+                  <p class='mb-4'><Ha sido un proceso de aprendizaje constante>, explicó el entrenador. <Viper siempre tuvo el talento natural, pero ha trabajado duramente en aspectos como el posicionamiento y la toma de decisiones, que son fundamentales para un AWPer de élite></p>
+                  
+                  <p class='mb-4'>Este reconocimiento llega en el momento perfecto para Space King, justo antes de las semifinales del LATAM Masters, donde el equipo buscará asegurar su pase a la gran final.</p>
+                `,
+                author: 'María Fernández',
+                authorImage: 'https://cdn.pixabay.com/photo/2017/04/01/21/06/portrait-2194457_1280.jpg',
+                relatedArticles: [
+                  'La evolución de Viper: De rifler a AWPer estrella',
+                  'Top 5: Los mejores momentos de Viper con el AWP',
+                  'Entrevista: Hawk revela secretos del entrenamiento del equipo'
+                ]
+              }; newsModal.isOpen = true" class="text-[#FF4500] hover:text-[#ff5a1f] transition-colors font-medium inline-flex items-center">
+                Leer más <i class="fas fa-arrow-right ml-1"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- News Item 3 -->
+        <div class="news-card bg-[#1a1a1a] rounded-lg overflow-hidden shadow-lg">
+          <div class="md:flex">
+            <div class="md:w-1/3">
+              <img src="https://cdn.pixabay.com/photo/2021/09/07/07/11/game-6603193_1280.jpg" alt="Nuevo patrocinador" class="w-full h-full object-cover md:h-64">
+            </div>
+            <div class="md:w-2/3 p-6">
+              <div class="flex justify-between items-start mb-2">
+                <span class="inline-block bg-[#FF4500]/20 text-[#FF4500] text-xs font-semibold px-2.5 py-1 rounded">Equipo</span>
+                <span class="text-gray-400 text-sm">5 mayo 2024</span>
+              </div>
+              <h3 class="text-xl font-bold mb-2">Space King anuncia alianza con TechForce, nuevo patrocinador principal</h3>
+              <p class="text-gray-300 mb-4">El equipo ha cerrado un acuerdo histórico con la marca de periféricos gaming TechForce, que se convierte en el patrocinador principal para la temporada 2024-2025. Esta colaboración permitirá mejorar la infraestructura del equipo...</p>
+              <button @click="newsModal.article = {
+                title: 'Space King anuncia alianza con TechForce, nuevo patrocinador principal',
+                date: '5 mayo 2024',
+                category: 'Equipo',
+                image: 'https://cdn.pixabay.com/photo/2021/09/07/07/11/game-6603193_1280.jpg',
+                content: `
+                  <p class='mb-4'>El equipo ha cerrado un acuerdo histórico con la marca de periféricos gaming TechForce, que se convierte en el patrocinador principal para la temporada 2024-2025. Esta colaboración permitirá mejorar la infraestructura del equipo y ampliar los recursos disponibles para los jugadores.</p>
+                  
+                  <p class='mb-4'>TechForce, reconocida por sus teclados mecánicos, ratones de alta precisión y auriculares de calidad profesional, equipará a todos los miembros de Space King con su línea Pro Series, diseñada específicamente para competidores de eSports.</p>
+                  
+                  <p class='mb-4'>Según declaró Miguel Ángel Torres, CEO de Space King: <Esta alianza marca un antes y un después en la historia del equipo. TechForce no solo nos proporciona el mejor equipamiento posible, sino que comparte nuestra visión de excelencia y profesionalismo en los eSports.></p>
+                  
+                  <p class='mb-4'>Por su parte, Laura Estévez, directora de marketing de TechForce, explicó: <Space King representa perfectamente los valores de nuestra marca: innovación, precisión y pasión por la tecnología. Estamos emocionados de acompañarlos en esta nueva etapa y confiamos en que juntos alcanzaremos grandes logros.></p>
+                  
+                  <h3 class='text-xl font-bold mt-6 mb-3'>Beneficios de la alianza</h3>
+                  
+                  <p class='mb-4'>El acuerdo incluye la renovación completa del gaming house del equipo, que contará con las últimas tecnologías para optimizar las sesiones de entrenamiento. Además, se desarrollarán productos exclusivos con la marca Space King que estarán disponibles para los fans en los próximos meses.</p>
+                  
+                  <p class='mb-4'>Este patrocinio también contempla la creación de contenido exclusivo, incluyendo un documental sobre el día a día del equipo y el proceso de preparación para las competiciones internacionales.</p>
+                  
+                  <p class='mb-4'>La presentación oficial de la alianza se realizará el próximo 20 de mayo en un evento especial que contará con la presencia de todos los jugadores y representantes de TechForce, donde además se revelarán los nuevos uniformes del equipo.</p>
+                `,
+                author: 'Roberto Sánchez',
+                authorImage: 'https://cdn.pixabay.com/photo/2017/11/02/14/26/model-2911330_1280.jpg',
+                relatedArticles: [
+                  'El mercado de patrocinios en eSports: Un análisis',
+                  'Cómo impactan los patrocinios en el rendimiento de los equipos',
+                  'TechForce: La marca que revoluciona los periféricos gaming'
+                ]
+              }; newsModal.isOpen = true" class="text-[#FF4500] hover:text-[#ff5a1f] transition-colors font-medium inline-flex items-center">
+                Leer más <i class="fas fa-arrow-right ml-1"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- News Item 4 -->
+        <div class="news-card bg-[#1a1a1a] rounded-lg overflow-hidden shadow-lg">
+          <div class="md:flex">
+            <div class="md:w-1/3">
+              <img src="https://cdn.pixabay.com/photo/2018/03/27/21/43/startup-3267505_1280.jpg" alt="Análisis táctico" class="w-full h-full object-cover md:h-64">
+            </div>
+            <div class="md:w-2/3 p-6">
+              <div class="flex justify-between items-start mb-2">
+                <span class="inline-block bg-[#FF4500]/20 text-[#FF4500] text-xs font-semibold px-2.5 py-1 rounded">Análisis</span>
+                <span class="text-gray-400 text-sm">28 abril 2024</span>
+              </div>
+              <h3 class="text-xl font-bold mb-2">Análisis táctico: La evolución estratégica de Space King en 2024</h3>
+              <p class="text-gray-300 mb-4">Un profundo análisis de cómo el equipo ha transformado su enfoque táctico durante la primera mitad de 2024. El cambio en los roles y la incorporación de nuevas estrategias ha potenciado significativamente su juego...</p>
+              <button @click="newsModal.article = {
+                title: 'Análisis táctico: La evolución estratégica de Space King en 2024',
+                date: '28 abril 2024',
+                category: 'Análisis',
+                image: 'https://cdn.pixabay.com/photo/2018/03/27/21/43/startup-3267505_1280.jpg',
+                content: `
+                  <p class='mb-4'>Un profundo análisis de cómo el equipo ha transformado su enfoque táctico durante la primera mitad de 2024. El cambio en los roles y la incorporación de nuevas estrategias ha potenciado significativamente su juego en los últimos torneos.</p>
+                  
+                  <p class='mb-4'>Durante los primeros meses de 2024, Space King ha experimentado una notable evolución en su estilo de juego. Bajo la dirección de Phoenix como IGL, el equipo ha pasado de un enfoque más reactivo a uno proactivo, tomando la iniciativa en la mayoría de las rondas y sorprendiendo a sus rivales con ejecuciones rápidas y precisas.</p>
+                  
+                  <h3 class='text-xl font-bold mt-6 mb-3'>Cambios en los roles</h3>
+                  
+                  <p class='mb-4'>Uno de los cambios más significativos ha sido la redefinición del rol de Cipher, quien ahora asume más responsabilidades como support, liberando a Shadow para adoptar un estilo de entry fragger más agresivo. Esta nueva dinámica ha mejorado notablemente las entradas en bombsites, especialmente en mapas como Mirage y Dust II.</p>
+                  
+                  <p class='mb-4'>Por otro lado, Reaper ha perfeccionado su estilo como lurker, mejorando su timing para realizar flanqueos en momentos críticos. Su capacidad para leer el juego rival y encontrar brechas en la defensa enemiga ha sido fundamental en varios triunfos recientes.</p>
+                  
+                  <h3 class='text-xl font-bold mt-6 mb-3'>Innovaciones tácticas</h3>
+                  
+                  <p class='mb-4'>Entre las innovaciones tácticas más interesantes se encuentra lo que el equipo denomina <Triple Split>, una estrategia para Mirage que implica dividir al equipo en tres unidades que atacan simultáneamente desde diferentes puntos, generando confusión en la defensa rival.</p>
+                  
+                  <p class='mb-4'>Otra táctica que ha dado excelentes resultados es el <Fake Delayed>, donde el equipo simula un ataque a un bombsite para después retirarse y ejecutar un ataque real al otro bombsite un tiempo después, cuando el rival ya ha rotado sus posiciones.</p>
+                  
+                  <p class='mb-4'>El análisis de datos también ha jugado un papel crucial en esta evolución. El equipo ahora dedica más tiempo a estudiar patrones de juego de sus adversarios, identificando tendencias y debilidades que pueden explotar durante los enfrentamientos.</p>
+                  
+                  <p class='mb-4'>Si Space King mantiene esta progresión táctica, podría consolidarse como uno de los equipos más innovadores y difíciles de predecir del panorama competitivo, lo que les daría una ventaja significativa de cara a los próximos torneos internacionales.</p>
+                `,
+                author: 'Javier López',
+                authorImage: 'https://cdn.pixabay.com/photo/2017/08/01/01/33/beanie-2562646_1280.jpg',
+                relatedArticles: [
+                  'Phoenix: El arte de ser un IGL moderno',
+                  'La importancia del anti-strat en el CSGO actual',
+                  'Comparativa táctica: Space King vs equipos europeos'
+                ]
+              }; newsModal.isOpen = true" class="text-[#FF4500] hover:text-[#ff5a1f] transition-colors font-medium inline-flex items-center">
+                Leer más <i class="fas fa-arrow-right ml-1"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="text-center" id="loadMoreNews">
+          <!-- <button class="bg-[#252525] hover:bg-[#333] text-white py-3 px-6 rounded-md transition duration-300 inline-flex items-center">
+            <span>Cargar más noticias</span>
+            <i class="fas fa-chevron-down ml-2"></i>
+          </button> -->
+        </div>
+      </div>
+    </div>
+    
+    <!-- News Modal -->
+    <div x-show="newsModal.isOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 z-50 overflow-y-auto modal-backdrop flex items-center justify-center p-4" @click.self="newsModal.isOpen = false">
+      <div x-show="newsModal.isOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95" x-transition:enter-end="opacity-100 transform scale-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-95" class="modal-content bg-[#1e1e1e] rounded-lg shadow-xl max-w-4xl w-full mx-auto overflow-hidden" @click.outside="newsModal.isOpen = false">
+        <!-- Article Header Image -->
+        <div class="relative h-72">
+          <img :src="newsModal.article?.image" :alt="newsModal.article?.title" class="w-full h-full object-cover">
+          <button @click="newsModal.isOpen = false" class="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6">
+            <div class="flex items-center justify-between">
+              <span class="inline-block bg-[#FF4500]/20 text-[#FF4500] text-xs font-semibold px-2.5 py-1 rounded" x-text="newsModal.article?.category"></span>
+              <span class="text-gray-300 text-sm" x-text="newsModal.article?.date"></span>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-bold mt-2" x-text="newsModal.article?.title"></h2>
+          </div>
+        </div>
+        
+        <!-- Article Content -->
+        <div class="p-6 md:p-8">
+          <div class="prose prose-lg prose-invert max-w-none" x-html="newsModal.article?.content">
+          </div>
+          
+          <!-- Author Info -->
+          <div class="mt-8 pt-6 border-t border-gray-700 flex items-center">
+            <img :src="newsModal.article?.authorImage" :alt="newsModal.article?.author" class="w-12 h-12 rounded-full object-cover mr-4">
+            <div>
+              <p class="font-medium" x-text="'Por ' + newsModal.article?.author"></p>
+              <p class="text-sm text-gray-400">Redactor de Space King</p>
+            </div>
+          </div>
+          
+          <!-- Related Articles -->
+          <!-- <div class="mt-8 pt-6 border-t border-gray-700">
+            <h3 class="text-xl font-bold mb-4">Artículos relacionados</h3>
+            <ul class="space-y-2">
+              <template x-for="article in newsModal.article?.relatedArticles">
+                <li>
+                  <a href="javascript:void(0)" class="text-[#FF4500] hover:text-[#ff5a1f] transition-colors flex items-center">
+                    <i class="fas fa-newspaper mr-2"></i>
+                    <span x-text="article"></span>
+                  </a>
+                </li>
+              </template>
+            </ul>
+          </div> -->
+          
+          <!-- Share Buttons -->
+          <!-- <div class="mt-8 pt-6 border-t border-gray-700">
+            <h3 class="text-lg font-medium mb-3">Compartir artículo</h3>
+            <div class="flex space-x-4">
+              <a href="javascript:void(0)" class="bg-[#1DA1F2] hover:bg-[#1a96e0] text-white p-2 rounded-full transition duration-300">
+                <i class="fab fa-twitter"></i>
+              </a>
+              <a href="javascript:void(0)" class="bg-[#4267B2] hover:bg-[#365899] text-white p-2 rounded-full transition duration-300">
+                <i class="fab fa-facebook-f"></i>
+              </a>
+              <a href="javascript:void(0)" class="bg-[#25D366] hover:bg-[#20bd5a] text-white p-2 rounded-full transition duration-300">
+                <i class="fab fa-whatsapp"></i>
+              </a>
+              <a href="javascript:void(0)" class="bg-[#2867B2] hover:bg-[#23589e] text-white p-2 rounded-full transition duration-300">
+                <i class="fab fa-linkedin-in"></i>
+              </a>
+              <a href="javascript:void(0)" class="bg-[#333] hover:bg-[#444] text-white p-2 rounded-full transition duration-300">
+                <i class="fas fa-link"></i>
+              </a>
+            </div>
+          </div> -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section id="contacto" class="py-20 section">
+    <div class="container mx-auto px-4">
+      <h2 class="text-4xl font-bold mb-2 text-center">Contáctanos</h2>
+      <p class="text-gray-400 text-center mb-12 max-w-2xl mx-auto">¿Tienes alguna pregunta o propuesta para Space King? Completa el formulario y nos pondremos en contacto contigo lo antes posible.</p>
+      
+      <div class="max-w-4xl mx-auto">
+        <div class="bg-[#1a1a1a] rounded-lg shadow-lg overflow-hidden">
+          <div class="md:flex">
+            <div class="md:w-2/5 bg-[#252525] p-8">
+              <h3 class="text-2xl font-bold mb-6">Información de contacto</h3>
+              
+              <div class="space-y-6">
+                <div class="flex items-start">
+                  <div class="bg-[#FF4500]/20 p-3 rounded-lg mr-4">
+                    <i class="fas fa-envelope text-[#FF4500]"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium mb-1">Email</h4>
+                    <p class="text-gray-400">info@spaceking.gg</p>
+                  </div>
+                </div>
+                
+                <div class="flex items-start">
+                  <div class="bg-[#FF4500]/20 p-3 rounded-lg mr-4">
+                    <i class="fas fa-map-marker-alt text-[#FF4500]"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium mb-1">Ubicación</h4>
+                    <p class="text-gray-400">Ciudad de México, México</p>
+                  </div>
+                </div>
+                
+                <div class="flex items-start">
+                  <div class="bg-[#FF4500]/20 p-3 rounded-lg mr-4">
+                    <i class="fas fa-headset text-[#FF4500]"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-medium mb-1">Soporte</h4>
+                    <p class="text-gray-400">support@spaceking.gg</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="mt-12">
+                <h4 class="font-medium mb-3">Síguenos en redes sociales</h4>
+                <div class="flex space-x-4">
+                  <a href="javascript:void(0)" class="bg-[#333] hover:bg-[#1DA1F2] text-white p-2 rounded-lg transition duration-300">
+                    <i class="fab fa-twitter"></i>
+                  </a>
+                  <a href="javascript:void(0)" class="bg-[#333] hover:bg-[#E1306C] text-white p-2 rounded-lg transition duration-300">
+                    <i class="fab fa-instagram"></i>
+                  </a>
+                  <a href="javascript:void(0)" class="bg-[#333] hover:bg-[#FF0000] text-white p-2 rounded-lg transition duration-300">
+                    <i class="fab fa-youtube"></i>
+                  </a>
+                  <a href="javascript:void(0)" class="bg-[#333] hover:bg-[#5865F2] text-white p-2 rounded-lg transition duration-300">
+                    <i class="fab fa-discord"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+            
+            <div class="md:w-3/5 p-8">
+              <div x-show="!contactFormSubmitted">
+                <h3 class="text-2xl font-bold mb-6">Envíanos un mensaje</h3>
+                
+                <form @submit.prevent="
+                  formErrors.name = !formData.name;
+                  formErrors.email = !formData.email || !/^\S+@\S+\.\S+$/.test(formData.email);
+                  formErrors.message = !formData.message;
+                  
+                  if (!formErrors.name && !formErrors.email && !formErrors.message) {
+                    contactFormSubmitted = true;
+                    // Aquí iría la llamada a la API, pero es un prototipo
+                  }
+                ">
+                  <div class="mb-4">
+                    <form
+                    action="https://formspree.io/f/mpwrlwlp"
+                    method="POST"
+                    >
+                    <label for="name" class="block text-sm font-medium mb-2">Nombre Completo</label>
+                    <input name="nombres" type="text" id="name" x-model="formData.name" :class="{'is-invalid': formErrors.name}" class="w-full bg-[#252525] border border-[#333] text-white rounded-md px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FF4500]">
+                    <div x-show="formErrors.name" class="invalid-feedback">Por favor, ingresa tu nombre</div>
+                  </div>
+                  
+                  <div class="mb-4">
+                    <label for="email" class="block text-sm font-medium mb-2">Correo Electrónico</label>
+                    <input name="correo" type="email" id="email" x-model="formData.email" :class="{'is-invalid': formErrors.email}" class="w-full bg-[#252525] border border-[#333] text-white rounded-md px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FF4500]">
+                    <div x-show="formErrors.email" class="invalid-feedback">Por favor, ingresa un correo electrónico válido</div>
+                  </div>
+                  
+                  <div class="mb-6">
+                    <label for="message" class="block text-sm font-medium mb-2">Mensaje</label>
+                    <textarea name="mensaje" id="message" rows="4" x-model="formData.message" :class="{'is-invalid': formErrors.message}" class="w-full bg-[#252525] border border-[#333] text-white rounded-md px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FF4500]"></textarea>
+                    <div x-show="formErrors.message" class="invalid-feedback">Por favor, ingresa tu mensaje</div>
+                  </div>
+                  
+                  <button type="submit" class="w-full bg-[#FF4500] hover:bg-[#ff5a1f] text-white py-3 rounded-md transition duration-300 flex items-center justify-center">
+                    <span>Enviar Mensaje</span>
+                    <i class="fas fa-paper-plane ml-2"></i>
+                  </button>
+                </form>
+              </div>
+              
+              <div x-show="contactFormSubmitted" class="flex flex-col items-center justify-center h-full py-12">
+                <div class="bg-[#FF4500]/20 p-6 rounded-full mb-6">
+                  <i class="fas fa-check-circle text-[#FF4500] text-5xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-3">¡Mensaje enviado con éxito!</h3>
+                <p class="text-gray-400 text-center mb-6">Gracias por contactarnos. Responderemos a tu mensaje lo antes posible.</p>
+                <button @click="
+                  contactFormSubmitted = false;
+                  formData.name = '';
+                  formData.email = '';
+                  formData.message = '';
+                " class="bg-[#333] hover:bg-[#444] text-white py-2 px-4 rounded-md transition duration-300">
+                  Enviar otro mensaje
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mt-12">
+          <h3 class="text-2xl font-bold mb-6 text-center">Preguntas Frecuentes</h3>
+          
+          <div class="space-y-4">
+            <div class="bg-[#1a1a1a] rounded-lg shadow-md p-4" x-data="{open: false}">
+              <div class="flex justify-between items-center cursor-pointer" @click="open = !open">
+                <h4 class="font-medium">¿Cómo puedo convertirme en patrocinador del equipo?</h4>
+                <i class="fas" :class="open ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+              </div>
+              <div x-show="open" x-transition class="mt-3 text-gray-400">
+                Para convertirte en patrocinador, puedes contactarnos a través del correo sponsors@spaceking.gg. Nuestro equipo de partnership evaluará tu propuesta y te contactará para discutir las diferentes opciones de colaboración disponibles.
+              </div>
+            </div>
+            
+            <div class="bg-[#1a1a1a] rounded-lg shadow-md p-4" x-data="{open: false}">
+              <div class="flex justify-between items-center cursor-pointer" @click="open = !open">
+                <h4 class="font-medium">¿Realizan pruebas para nuevos jugadores?</h4>
+                <i class="fas" :class="open ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+              </div>
+              <div x-show="open" x-transition class="mt-3 text-gray-400">
+                Sí, periódicamente realizamos pruebas para identificar nuevo talento. Debes tener al menos nivel 10 en FACEIT o rango Élite Global en MM. Puedes enviar tu aplicación a trials@spaceking.gg con tus estadísticas y demo de juego.
+              </div>
+            </div>
+            
+            <div class="bg-[#1a1a1a] rounded-lg shadow-md p-4" x-data="{open: false}">
+              <div class="flex justify-between items-center cursor-pointer" @click="open = !open">
+                <h4 class="font-medium">¿Dónde puedo comprar merchandising oficial del equipo?</h4>
+                <i class="fas" :class="open ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+              </div>
+              <div x-show="open" x-transition class="mt-3 text-gray-400">
+                Todo nuestro merchandising oficial está disponible en nuestra tienda online: shop.spaceking.gg. Ofrecemos envíos internacionales y contamos con jerseys, sudaderas, mousepads y accesorios exclusivos.
+              </div>
+            </div>
+            
+            <div class="bg-[#1a1a1a] rounded-lg shadow-md p-4" x-data="{open: false}">
+              <div class="flex justify-between items-center cursor-pointer" @click="open = !open">
+                <h4 class="font-medium">¿Cómo puedo recibir notificaciones sobre futuros partidos?</h4>
+                <i class="fas" :class="open ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+              </div>
+              <div x-show="open" x-transition class="mt-3 text-gray-400">
+                Puedes suscribirte a nuestro calendario de partidos a través de nuestra app móvil o siguiéndonos en redes sociales donde anunciamos todos nuestros encuentros. También ofrecemos un servicio de notificaciones por correo electrónico.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-[#0a0a0a] py-10 border-t border-[#333]">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <div class="text-2xl font-bold text-white mb-4">
+            <span class="text-[#FF4500]">Space</span>King <span class="text-sm font-normal text-gray-400">eSports</span>
+          </div>
+          <p class="text-gray-400 mb-6">Formando el futuro de los eSports en Latinoamérica desde 2021. Comprometidos con la excelencia y la innovación en Counter-Strike.</p>
+          <div class="flex space-x-4">
+            <a href="javascript:void(0)" class="social-icon text-gray-400 hover:text-[#1DA1F2] transition-all">
+              <i class="fab fa-twitter fa-lg"></i>
+            </a>
+            <a href="javascript:void(0)" class="social-icon text-gray-400 hover:text-[#E1306C] transition-all">
+              <i class="fab fa-instagram fa-lg"></i>
+            </a>
+            <a href="javascript:void(0)" class="social-icon text-gray-400 hover:text-[#FF0000] transition-all">
+              <i class="fab fa-youtube fa-lg"></i>
+            </a>
+            <a href="javascript:void(0)" class="social-icon text-gray-400 hover:text-[#5865F2] transition-all">
+              <i class="fab fa-discord fa-lg"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-semibold mb-4">Navegación</h3>
+          <ul class="space-y-2">
+            <li><a href="javascript:void(0)" @click="window.scrollTo({ top: 0, behavior: 'smooth' })" class="text-gray-400 hover:text-white transition-colors">Inicio</a></li>
+            <li><a href="javascript:void(0)" @click="document.getElementById('jugadores').scrollIntoView({ behavior: 'smooth' })" class="text-gray-400 hover:text-white transition-colors">Jugadores</a></li>
+            <li><a href="javascript:void(0)" @click="document.getElementById('resultados').scrollIntoView({ behavior: 'smooth' })" class="text-gray-400 hover:text-white transition-colors">Resultados</a></li>
+            <li><a href="javascript:void(0)" @click="document.getElementById('noticias').scrollIntoView({ behavior: 'smooth' })" class="text-gray-400 hover:text-white transition-colors">Noticias</a></li>
+            <li><a href="javascript:void(0)" @click="document.getElementById('contacto').scrollIntoView({ behavior: 'smooth' })" class="text-gray-400 hover:text-white transition-colors">Contacto</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-semibold mb-4">Legal</h3>
+          <ul class="space-y-2">
+            <li><a href="javascript:void(0)" class="text-gray-400 hover:text-white transition-colors">Términos y Condiciones</a></li>
+            <li><a href="javascript:void(0)" class="text-gray-400 hover:text-white transition-colors">Política de Privacidad</a></li>
+            <li><a href="javascript:void(0)" class="text-gray-400 hover:text-white transition-colors">Cookies</a></li>
+            <li><a href="javascript:void(0)" class="text-gray-400 hover:text-white transition-colors">Aviso Legal</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-semibold mb-4">Newsletter</h3>
+          <p class="text-gray-400 mb-4">Suscríbete para recibir las últimas noticias y actualizaciones.</p>
+          <div class="flex">
+            <input type="email" placeholder="Tu correo electrónico" class="bg-[#252525] border border-[#333] text-white rounded-l-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#FF4500] w-full">
+            <button class="bg-[#FF4500] hover:bg-[#ff5a1f] text-white px-4 rounded-r-md transition duration-300">
+              <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="border-t border-[#333] mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+        <p class="text-gray-500 text-sm mb-4 md:mb-0">© 2024 Space King eSports. Todos los derechos reservados.</p>
+        <div class="flex items-center">
+          <span class="text-gray-500 text-sm mr-2">Creado con</span>
+          <i class="fas fa-heart text-[#FF4500]"></i>
+          <span class="text-gray-500 text-sm ml-2">para la comunidad gamer</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script id="app-script">
+    // Initialize Swiper
+    document.addEventListener('DOMContentLoaded', function() {
+      // Hero Swiper
+      const swiper = new Swiper(".mySwiper", {
+        slidesPerView: 1,
+        spaceBetween: 0,
+        loop: true,
+        autoplay: {
+          delay: 5000,
+          disableOnInteraction: false,
+        },
+        pagination: {
+          el: ".swiper-pagination",
+          clickable: true,
+        },
+        effect: "fade",
+        fadeEffect: {
+          crossFade: true
+        },
+      });
+
+      // Results Update Button
+      document.getElementById('updateResults').addEventListener('click', function() {
+        const button = this;
+        const originalText = button.innerHTML;
+        
+        // Show loading state
+        button.innerHTML = '<div class="loader mr-2"></div> Actualizando...';
+        button.disabled = true;
+        
+        // Simulate API call
+        setTimeout(function() {
+          button.innerHTML = originalText;
+          button.disabled = false;
+          
+          // Show success message
+          const toast = document.createElement('div');
+          toast.className = 'fixed bottom-4 right-4 bg-green-600 text-white py-2 px-4 rounded-md shadow-lg z-50 flex items-center fade-in';
+          toast.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Resultados actualizados correctamente';
+          document.body.appendChild(toast);
+          
+          setTimeout(function() {
+            toast.remove();
+          }, 3000);
+        }, 1500);
+      });
+
+      // Load More News Button
+      document.getElementById('loadMoreNews').addEventListener('click', function() {
+        const button = this;
+        const buttonText = button.querySelector('span');
+        const buttonIcon = button.querySelector('i');
+        
+        // Show loading state
+        buttonText.textContent = 'Cargando...';
+        buttonIcon.className = 'fas fa-spinner fa-spin ml-2';
+        
+        // Simulate API call
+        setTimeout(function() {
+          buttonText.textContent = 'No hay más noticias disponibles';
+          buttonIcon.className = 'fas fa-check ml-2';
+          button.querySelector('button').disabled = true;
+          button.querySelector('button').classList.add('opacity-50', 'cursor-not-allowed');
+        }, 1500);
+      });
+
+      // Intersection Observer for section animations
+      const sections = document.querySelectorAll('.section');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, { threshold: 0.1 });
+
+      sections.forEach(section => {
+        observer.observe(section);
+      });
+
+      // Maps chart initialization
+      const ctx = document.getElementById('mapsChart').getContext('2d');
+      const mapsChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: ['Mirage', 'Dust II', 'Inferno', 'Nuke', 'Overpass', 'Ancient', 'Vertigo'],
+          datasets: [{
+            label: 'Porcentaje de victorias',
+            data: [78, 82, 65, 58, 72, 53, 68],
+            backgroundColor: 'rgba(255, 69, 0, 0.2)',
+            borderColor: 'rgba(255, 69, 0, 1)',
+            borderWidth: 2,
+            pointBackgroundColor: 'rgba(255, 69, 0, 1)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgba(255, 69, 0, 1)'
+          }]
+        },
+        options: {
+          scales: {
+            r: {
+              angleLines: {
+                color: 'rgba(255, 255, 255, 0.1)'
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.1)'
+              },
+              pointLabels: {
+                color: '#f2f2f2'
+              },
+              ticks: {
+                color: '#aaa',
+                backdropColor: 'transparent'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: {
+                color: '#f2f2f2'
+              }
+            }
+          }
+        }
+      });
+
+      // Initialize scrollspy to track active section
+      window.addEventListener('scroll', function() {
+        let current = '';
+        sections.forEach(section => {
+          const sectionTop = section.offsetTop;
+          const sectionHeight = section.clientHeight;
+          if (pageYOffset >= (sectionTop - 300)) {
+            current = section.getAttribute('id');
+          }
+        });
+
+        // Update the Alpine.js data
+        if (current && window.Alpine) {
+          const data = Alpine.store ? Alpine.store('app') : null;
+          if (data) {
+            data.activeSection = current;
+          } else {
+            const firstAlpineInstance = document.querySelector('[x-data]').__x;
+            if (firstAlpineInstance) {
+              firstAlpineInstance.$data.activeSection = current;
+            }
+          }
+        }
+      });
+
+      // Save last viewed article to LocalStorage
+      document.querySelectorAll('.news-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const title = this.querySelector('h3').textContent;
+          localStorage.setItem('lastViewedArticle', title);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
